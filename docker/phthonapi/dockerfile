@@ -1,0 +1,13 @@
+# Python API Dockerfile (Phase 2+)
+FROM ubuntu:24.04
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-pip \
+    python3-pyqt5 \
+    python3-flask && \
+    rm -rf /var/lib/apt/lists/*
+#RUN pip install Flask
+COPY python/health.py /usr/local/bin/health.py
+HEALTHCHECK CMD curl --fail http://localhost:5000/api/health || exit 1
+CMD ["flask", "--app", "/usr/local/bin/health.py", "run", "--host=0.0.0.0", "--port=5000"]
+

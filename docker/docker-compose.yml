@@ -1,0 +1,74 @@
+version: '3.8'
+services:
+  apache:
+    build: ./apache
+    container_name: apache
+    networks:
+      - fsnet
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - ./apache/static-html-dir:/var/www/localhost/htdocs
+    restart: always
+  phthonapi:
+    build: ./phthonapi
+    container_name: phthonapi
+    networks:
+      - fsnet
+    expose:
+      - "5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: always
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    depends_on:
+      - apache
+      - phthonapi
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - fsnet
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - ./nginx/conf/cert.pem:/etc/nginx/cert.pem:ro
+      - ./nginx/conf/key.pem:/etc/nginx/key.pem:ro
+      - ./nginx/conf/nginx-advanced.conf:/etc/nginx/nginx.conf:ro
+    restart: always
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+    networks:
+      - fsnet
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.12.0
+    ports:
+      - "5001:5001"
+    networks:
+      - fsnet
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.0
+    ports:
+      - "5601:5601"
+    networks:
+      - fsnet
+networks:
+  fsnet:
+    driver: bridge

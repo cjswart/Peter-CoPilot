@@ -1,0 +1,8 @@
+# NGINX Reverse Proxy Dockerfile (Advanced)
+FROM alpine:latest
+RUN apk add --no-cache nginx openssl
+COPY conf/nginx-advanced.conf /etc/nginx/nginx.conf
+COPY conf/cert.pem /etc/nginx/cert.pem
+COPY conf/key.pem /etc/nginx/key.pem
+EXPOSE 80 443
+CMD ["/bin/sh", "-c", "nginx -g 'daemon off;' & tail -F /var/log/nginx/access.log /var/log/nginx/error.log"]
