@@ -1,7 +1,8 @@
 # Apache Web Server Dockerfile (Phase 1)
-FROM alpine:latest
-RUN apk add --no-cache apache2
+FROM alpine:3.22.2
+RUN apk add --no-cache apache2=2.4.58-r0
 RUN mkdir -p /var/www/localhost/htdocs
 COPY static-html-dir/index.html /var/www/localhost/htdocs/index.html
 EXPOSE 80
+
 CMD ["/bin/sh", "-c", "httpd -D FOREGROUND & tail -F /var/log/apache2/access.log /var/log/apache2/error.log"]
